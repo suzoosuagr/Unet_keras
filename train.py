@@ -5,7 +5,7 @@ from data import *
 from keras import backend as k
 import tensorflow as tf
 from keras.callbacks import TensorBoard
-from time import time
+from time import strftime
 
 config = tf.ConfigProto()
 # config.gpu_options.per_process_gpu_memory_fraction = 0.8
@@ -18,8 +18,9 @@ K.set_session(session)
 # steps = 259/batch_size
 
 # for membrane run
-batch_size = 16
+batch_size = 14
 steps_per_epoch = 30
+steps = 6
 
 data_gen_args = dict(rotation_range=0.2,
                     width_shift_range=0.05,
@@ -29,21 +30,21 @@ data_gen_args = dict(rotation_range=0.2,
                     horizontal_flip=True,
                     fill_mode='nearest')
 myGene = trainGenerator(batch_size=batch_size,
-                        train_path='membrane/train',
+                        train_path='../data/membrane/train',
                         image_folder='image',
                         mask_folder='label',
                         aug_dict=data_gen_args,
                         save_to_dir = None)
-# evalGene = evalGenerator(batch_size=batch_size,
-#                         train_path='../data/ISICKeras/eval',
-#                         image_folder='image',
-#                         mask_folder='label',
-#                         save_to_dir = None,)
+evalGene = evalGenerator(batch_size=batch_size,
+                        train_path='../data/membrane/eval',
+                        image_folder='image',
+                        mask_folder='label',
+                        save_to_dir = None,)
 model = unet()
-tensorboard = TensorBoard(log_dir='experiment/membrane/logs/{}'.format(time()), write_graph=False, update_freq='epoch')
-model_checkpoint = ModelCheckpoint('membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=steps_per_epoch,epochs=20,callbacks=[model_checkpoint, tensorboard])
-#                     validation_data=evalGene, validation_steps=steps)
+tensorboard = TensorBoard(log_dir='experiment/membrane/logs/{}'.format(strftime('%Y-%m-%d_%H:%M:%S')), write_graph=False, update_freq='epoch')
+model_checkpoint = ModelCheckpoint('../model_weights/membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
+model.fit_generator(myGene,steps_per_epoch=steps_per_epoch,epochs=20,callbacks=[model_checkpoint, tensorboard],
+                    validation_data=evalGene, validation_steps=steps)
 # model.evaluate_generator(evalGene, verbose=1, steps = steps)
 
 # testGene = testGenerator("data/membrane/test")

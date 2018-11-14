@@ -8,7 +8,7 @@ from keras.callbacks import TensorBoard
 from time import strftime
 
 config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.8
+config.gpu_options.per_process_gpu_memory_fraction = 0.8
 session = tf.Session(config=config)
 K.set_session(session)
 

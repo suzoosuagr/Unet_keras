@@ -9,6 +9,7 @@ from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
 from skimage import filters
+from keras import losses
 
 def IoU(y_true, y_pred):
     y_pred = K.cast(y_pred > 0.5, 'float32')
@@ -23,6 +24,23 @@ def IoU(y_true, y_pred):
 
     return K.mean(intersection / denominator)
 
+def IoU_bce_loss(y_true, y_pred):
+    ''' IoU loss + binary_cross_entropy
+    called by function name by `model.compile(loss=IoU_bce_loss)` 
+    Return:
+        loss op
+    '''
+    bce_loss = losses.binary_crossentropy(y_true, y_pred)
+    H, W, _ = y_pred.get_shape().as_list()[1:]
+    pred_flat = K.reshape(y_pred, [-1, H * W])
+    true_flat = K.reshape(y_true, [-1, H * W])
+    intersection = K.sum(pred_flat * true_flat, axis=1)
+    denominator = K.sum(
+        pred_flat, axis=1) + K.sum(
+            true_flat, axis=1) + 1e-7 - intersection
+
+    iou_loss = K.mean(intersection / denominator)
+    return bce_loss - iou_loss
 
 
 def unet_L(pretrained_weights = None,input_size = (256,256,1)):
@@ -81,7 +99,7 @@ def unet_L(pretrained_weights = None,input_size = (256,256,1)):
 
     model = Model(input = inputs, output = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy', IoU])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = IoU_bce_loss, metrics = ['accuracy', IoU])
     
     #model.summary()
 

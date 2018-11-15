@@ -8,7 +8,7 @@ from keras.callbacks import TensorBoard
 from time import strftime
 
 config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
+# config.gpu_options.per_process_gpu_memory_fraction = 0.8
 session = tf.Session(config=config)
 K.set_session(session)
 
@@ -18,8 +18,8 @@ K.set_session(session)
 # steps = 259/batch_size
 
 # for membrane run
-batch_size = 14
-steps_per_epoch = 30
+batch_size = 16
+steps_per_epoch = 25
 steps = 6
 
 data_gen_args = dict(rotation_range=0.2,
@@ -30,20 +30,20 @@ data_gen_args = dict(rotation_range=0.2,
                     horizontal_flip=True,
                     fill_mode='nearest')
 myGene = trainGenerator(batch_size=batch_size,
-                        train_path='../data/membrane/train',
+                        train_path='../data/ISICKeras/train',
                         image_folder='image',
                         mask_folder='label',
                         aug_dict=data_gen_args,
                         save_to_dir = None)
 evalGene = evalGenerator(batch_size=batch_size,
-                        train_path='../data/membrane/eval',
+                        train_path='../data/ISICKeras/eval',
                         image_folder='image',
                         mask_folder='label',
                         save_to_dir = None,)
 model = unet()
-tensorboard = TensorBoard(log_dir='experiment/membrane/logs/{}'.format(strftime('%Y-%m-%d_%H:%M:%S')), write_graph=False, update_freq='epoch')
-model_checkpoint = ModelCheckpoint('../model_weights/membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=steps_per_epoch,epochs=20,callbacks=[model_checkpoint, tensorboard],
+tensorboard = TensorBoard(log_dir='experiment/ISIC_gray_inputs_iou_bce/logs/{}'.format(strftime('%Y-%m-%d_%H:%M:%S')), write_graph=False, update_freq='epoch')
+model_checkpoint = ModelCheckpoint('../model_weights/ISIC_gray_inputs_iou_bce.hdf5', monitor='val_acc',verbose=1, save_best_only=True, mode='max')
+model.fit_generator(myGene,steps_per_epoch=steps_per_epoch,epochs=200,callbacks=[model_checkpoint, tensorboard],
                     validation_data=evalGene, validation_steps=steps)
 # model.evaluate_generator(evalGene, verbose=1, steps = steps)
 

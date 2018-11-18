@@ -10,6 +10,7 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
 from skimage import filters
 from keras import losses
+from keras.engine.topology import Layer
 
 def IoU(y_true, y_pred):
     y_pred = K.cast(y_pred > 0.5, 'float32')
@@ -43,11 +44,11 @@ def IoU_bce_loss(y_true, y_pred):
     return bce_loss - iou_loss
 
 
-def unet_L(pretrained_weights = None,input_size = (256,256,1)):
-    inputs = Input(input_size)
-    laplacian = filters.laplace(inputs, 3)
-    inputs = concatenate([inputs, laplacian], axis=3)
-    conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
+def unet_L(pretrained_weights = None,input_size = (256,256,1), laplacian_size = (256,256,1)):
+    inputs = Input(input_size, name='input_1')
+    laplacian = Input(laplacian_size, name='input_2')
+    inputs_1 = concatenate([inputs, laplacian], axis=3)
+    conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs_1)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
     laplacian1 = MaxPooling2D(pool_size=(2, 2))(laplacian)
@@ -97,7 +98,7 @@ def unet_L(pretrained_weights = None,input_size = (256,256,1)):
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
-    model = Model(input = inputs, output = conv10)
+    model = Model(inputs = [inputs,laplacian], output = conv10)
 
     model.compile(optimizer = Adam(lr = 1e-4), loss = IoU_bce_loss, metrics = ['accuracy', IoU])
     

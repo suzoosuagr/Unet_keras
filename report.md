@@ -10,3 +10,11 @@ Including 2332 skin images (2075 for training, 259 for validation), all rgb imag
 - **DATA** : Membrane datasets, batch size 16, epoch: 20, with augmentation. 
 ## Result:
 The results shown as 
+
+
+
+
+
+
+# 部分总结
+For ISIC2018 输入是rgb or gray 无所谓，不会对结构有太多的影响. 

@@ -41,7 +41,7 @@ def IoU_bce_loss(y_true, y_pred):
             true_flat, axis=1) + 1e-7 - intersection
 
     iou_loss = K.mean(intersection / denominator)
-    return bce_loss - iou_loss + 1
+    return bce_loss - iou_loss + 1.0
 
 
 def unet_L(pretrained_weights = None,input_size = (256,256,3), laplacian_size = (256,256,1)):

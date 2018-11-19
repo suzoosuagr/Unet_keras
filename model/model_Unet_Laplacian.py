@@ -41,10 +41,10 @@ def IoU_bce_loss(y_true, y_pred):
             true_flat, axis=1) + 1e-7 - intersection
 
     iou_loss = K.mean(intersection / denominator)
-    return bce_loss - iou_loss
+    return bce_loss - iou_loss + 1
 
 
-def unet_L(pretrained_weights = None,input_size = (256,256,1), laplacian_size = (256,256,1)):
+def unet_L(pretrained_weights = None,input_size = (256,256,3), laplacian_size = (256,256,1)):
     inputs = Input(input_size, name='input_1')
     laplacian = Input(laplacian_size, name='input_2')
     inputs_1 = concatenate([inputs, laplacian], axis=3)
@@ -100,7 +100,7 @@ def unet_L(pretrained_weights = None,input_size = (256,256,1), laplacian_size = 
 
     model = Model(inputs = [inputs,laplacian], output = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = IoU_bce_loss, metrics = ['accuracy', IoU])
+    model.compile(optimizer = Adam(lr = 1e-3), loss = IoU_bce_loss, metrics = ['accuracy', IoU])
     
     #model.summary()
 

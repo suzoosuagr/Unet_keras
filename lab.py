@@ -1,5 +1,5 @@
 import numpy as np
-import skimage.filters as filters
+import skimage.feature as feature
 import skimage.io as io
 import skimage.transform as trans
 import cv2
@@ -18,13 +18,7 @@ def normalize_L(laplacian):
 
 
 img = io.imread('test.jpg', as_gray=True)
-# img = trans.resize(img, (256,256))
-# laplacian = cv2.Laplacian(img, cv2.CV_32F)
-laplacian = filters.laplace(img, 3)
-laplacian = normalize_L(laplacian)
-laplacian = np.resize(laplacian, (256,256,1))
-print(laplacian.shape)
-print(laplacian.max())
-io.imshow(laplacian)
+c_img = feature.canny(img) * 1.0
+io.imshow(c_img)
 io.show()
-print('testpoint')
+print('finished')

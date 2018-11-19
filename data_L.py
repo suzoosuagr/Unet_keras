@@ -6,7 +6,11 @@ import glob
 import skimage.io as io
 import skimage.transform as trans
 import skimage.filters as filters
+import skimage.color as color
+import skimage.feature as feature
 import keras.backend as K
+
+
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -24,6 +28,7 @@ Unlabelled = [0,0,0]
 COLOR_DICT = np.array([Sky, Building, Pole, Road, Pavement,
                           Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
 
+
 def normalize(laplacian):
     max_val = laplacian.max()
     min_val = laplacian.min()
@@ -32,7 +37,7 @@ def normalize(laplacian):
     return laplacian / domain
     
 
-def adjustData_L(img, mask):
+def adjustData_L_gray(img, mask):
     if(np.max(img) > 1):
         img = img / 255
         mask = mask / 255
@@ -44,6 +49,32 @@ def adjustData_L(img, mask):
         laplacian = normalize(laplacian)
         laplacian = np.resize(laplacian, img_size)
     return (img, laplacian, mask)
+
+def adjustData_L_rgb(img, mask):
+    gray = color.rgb2gray(img)
+    if(np.max(img) > 1):
+        img = img / 255
+        mask = mask / 255
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
+        img_r = np.resize(gray, (256,256))
+        laplacian = filters.laplace(img_r, 3)
+        laplacian = normalize(laplacian)
+        laplacian = np.resize(laplacian, mask.shape)
+    return (img, laplacian, mask)
+
+def adjustData_Canny_gray(img, mask):
+    if(np.max(img) > 1):
+        img = img / 255
+        mask = mask / 255
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
+        img_size = img.shape
+        img_c = np.resize(img, (256,256))
+        img_c = feature.canny(img_c) * 1.0
+        img_c = np.resize(img_c, img_size)
+    return (img, img_c, mask)
+    
 
 def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_class = False,as_gray = True):
     for i in range(num_image):
@@ -98,7 +129,7 @@ def trainGenerator_L(batch_size,train_path,image_folder,mask_folder,aug_dict, im
         seed = seed)
     train_generator = zip(image_generator, mask_generator)
     for (img,mask) in train_generator:
-        img,laplacian,mask = adjustData_L(img,mask)
+        img,laplacian,mask = adjustData_Canny_gray(img,mask)
         yield [img, laplacian],[mask]
 
 def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_color_mode = 'grayscale',mask_color_mode = 'grayscale', 
@@ -128,5 +159,5 @@ def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_col
         seed = seed)
     eval_generator = zip(image_generator, mask_generator)
     for (img,mask) in eval_generator:
-        img,laplacian,mask = adjustData_L(img,mask)
+        img,laplacian,mask = adjustData_Canny_gray(img,mask)
         yield [img, laplacian], [mask]

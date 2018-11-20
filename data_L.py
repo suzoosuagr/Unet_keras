@@ -129,7 +129,7 @@ def trainGenerator_L(batch_size,train_path,image_folder,mask_folder,aug_dict, im
         seed = seed)
     train_generator = zip(image_generator, mask_generator)
     for (img,mask) in train_generator:
-        img,laplacian,mask = adjustData_Canny_gray(img,mask)
+        img,laplacian,mask = adjustData_L_gray(img,mask)
         yield [img, laplacian],[mask]
 
 def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_color_mode = 'grayscale',mask_color_mode = 'grayscale', 
@@ -159,5 +159,5 @@ def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_col
         seed = seed)
     eval_generator = zip(image_generator, mask_generator)
     for (img,mask) in eval_generator:
-        img,laplacian,mask = adjustData_Canny_gray(img,mask)
+        img,laplacian,mask = adjustData_L_gray(img,mask)
         yield [img, laplacian], [mask]

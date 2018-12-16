@@ -60,13 +60,15 @@ def TransitionUp(skip_connection, block_to_upsample, n_filters):
     inputs = concatenate([inputs, skip_connection])
     return inputs
 
-def FC_Dense(pretrained_weights=None, input_size=(256,256,3), n_filters_first=32):
-    inputs = Input(input_size)
+def FC_Dense_L(pretrained_weights=None, input_size=(256,256,3), laplacian_size=(256,256,1), n_filters_first=32):
+    inputs = Input(input_size, name='input_1')
+    laplacian = Input(laplacian_size, name='input_2')
+    inputs_1 = concatenate([inputs, laplacian], axis=3)
     growth_rate = 12
     n_pool = 4
     # First Conv
     # all feature maps store in `stack`
-    stack = Conv2D(n_filters_first, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
+    stack = Conv2D(n_filters_first, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs_1)
     # The number of feature maps store in n_filters
     n_filters = n_filters_first 
 
@@ -79,7 +81,7 @@ def FC_Dense(pretrained_weights=None, input_size=(256,256,3), n_filters_first=32
             conv = BN_ReLU_Conv(stack, growth_rate, dropout=0.2)
             stack = concatenate([conv, stack], axis=3)
             n_filters += growth_rate
-        skip_connection_list.append(stack)
+        skip_connection_list.append(concatenate([stack, laplacian], axis=3))
         stack = TransitionDown(stack, n_filters, dropout=0.2)
 
     skip_connection_list = skip_connection_list[::-1]
@@ -119,10 +121,10 @@ def FC_Dense(pretrained_weights=None, input_size=(256,256,3), n_filters_first=32
     # conv1 = Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(stack)
     conv2 = Conv2D(1, 1, activation='sigmoid')(stack)
 
-    model = Model(inputs=inputs, output=conv2)
+    model = Model(inputs=[inputs, laplacian], output=conv2)
     model.compile(optimizer = Adam(lr = 1e-4), loss = IoU_bce_loss, metrics = ['accuracy', IoU])
 
     if(pretrained_weights):
         model.load_weights(pretrained_weights)
-
+ 
     return model

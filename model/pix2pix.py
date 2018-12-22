@@ -17,6 +17,10 @@ import numpy as np
 import os
 from keras import callbacks
 import logging
+import tensorflow as tf
+from keras import losses
+
+
 
 def set_logger(log_path):
     """Sets the logger to log info in terminal and file `log_path`.
@@ -57,6 +61,9 @@ class Pix2Pix():
         self.g_channels = 1
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.lab_shape = (self.img_rows, self.img_cols, self.g_channels)
+
+        # Summary
+        self.writer = tf.summary.FileWriter('../experiment/ISIC_gray_cGAN/logs/{}'.format(datetime.datetime.now()))
 
         # Configure data loader ISICKeras 
         self.dataset_name = 'ISICKeras'
@@ -232,6 +239,11 @@ class Pix2Pix():
             
             avg_test_iou = np.mean(self.test_iou_ls)
             avg_test_g_loss = np.mean(self.test_g_loss)
+            summary_test_iou = tf.Summary(value=[
+                tf.Summary.Value(tag='avg_test_iou', simple_value=avg_test_iou),
+                tf.Summary.Value(tag='avg_test_g_loss', simple_value=avg_test_g_loss)
+            ])
+            self.writer.add_summary(summary_test_iou)
             if avg_test_iou > self.best_iou:
                 self.best_iou = avg_test_iou
                 self.best_g_loss = avg_test_g_loss
@@ -239,7 +251,7 @@ class Pix2Pix():
                 logging.info('New best iou updated, now the best test iou is {:.4f}'.format(avg_test_iou))
                 self.combined.save(filepath='../../model_weights/ISIC_gray_cGAN.hdf5')
             else:
-                logging.info('No new best iou, and current best test iou is {:.2f}'.format('self.best_iou'))
+                logging.info('No new best iou, and current best test iou is {:.2f}'.format(self.best_iou))
                 # If at save interval => save generated image samples
                 # if batch_i % sample_interval == 0:
                 #     self.sample_images(epoch, batch_i)
@@ -281,7 +293,6 @@ class Pix2Pix():
                 true_flat, axis=1) + 1e-7 - intersection
 
         return np.mean(intersection / denominator)
-
 
 if __name__ == '__main__':
     set_logger('../train_cGAN.log')

@@ -23,6 +23,8 @@ batch_size = 16
 steps_per_epoch = 25
 steps = 6
 
+
+
 data_gen_args = dict(rotation_range=0.2,
                     width_shift_range=0.05,
                     height_shift_range=0.05,
@@ -42,7 +44,7 @@ evalGene = evalGenerator_L(batch_size=batch_size,
                         image_folder='image',
                         mask_folder='label',
                         image_color_mode='grayscale',
-                        save_to_dir = None,)
+                        save_to_dir = None)
 model = unet_L_v3()
 tensorboard = TensorBoard(log_dir='experiment/ISIC_gray_inputs_iou_bce_L_1_v3/logs/{}'.format(strftime('%Y-%m-%d_%H:%M:%S')), write_graph=False, update_freq='epoch')
 model_checkpoint = ModelCheckpoint('../model_weights/ISIC_gray_inputs_iou_bce_L_1_v3.hdf5', monitor='val_IoU',verbose=1, save_best_only=True, mode='max')

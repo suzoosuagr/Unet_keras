@@ -1,2 +1,8 @@
-n_layers_per_block = [5] * (2 * 4 + 1)
-print(n_layers_per_block)
+from glob import glob
+import numpy as np
+import os
+
+if 30 > 40:
+    print('30 > 40')
+else:
+    print('30 < 40')

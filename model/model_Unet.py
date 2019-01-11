@@ -41,7 +41,7 @@ def IoU_bce_loss(y_true, y_pred):
     iou_loss = K.mean(intersection / denominator)
     return bce_loss - iou_loss + 1
 
-def unet(pretrained_weights = None,input_size = (256,256,1)):
+def unet(pretrained_weights = None,input_size = (256,256,3)):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)

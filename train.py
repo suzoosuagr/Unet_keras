@@ -13,15 +13,15 @@ config = tf.ConfigProto()
 session = tf.Session(config=config)
 K.set_session(session)
 
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-# batch_size=16
-# steps_per_epoch = 2075/batch_size
-# steps = 259/batch_size
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+batch_size=16
+steps_per_epoch = 2075//batch_size
+steps = 259//batch_size
 
-# for membrane run
-batch_size = 16
-steps_per_epoch = 25
-steps = 6
+# # for membrane run
+# batch_size = 16
+# steps_per_epoch = 25
+# steps = 6
 
 
 
@@ -38,7 +38,7 @@ myGene = trainGenerator(batch_size=batch_size,
                         train_path='../data/ISICKeras/train',
                         image_folder='image',
                         mask_folder='label',
-                        image_color_mode='grayscale',
+                        image_color_mode='rgb',
                         aug_dict=data_gen_args,
                         save_to_dir = None)
 evalGene = evalGenerator(batch_size=batch_size,

@@ -50,18 +50,31 @@ def adjustData_L_gray(img, mask):
         laplacian = np.resize(laplacian, img_size)
     return (img, laplacian, mask)
 
-def adjustData_L_rgb(img, mask):
-    gray = color.rgb2gray(img)
+def adjustData_L_rgb_1(img, mask):
+    gray = color.rgb2gray(img) # gray [0,1]
     if(np.max(img) > 1):
         img = img / 255
         mask = mask / 255
         mask[mask > 0.5] = 1
         mask[mask <= 0.5] = 0
-        img_r = np.resize(gray, (256,256))
-        laplacian = filters.laplace(img_r, 3)
+#         gray = np.resize(gray, (256,256,1))
+        laplacian = filters.laplace(gray, 3)
         laplacian = normalize(laplacian)
         laplacian = np.resize(laplacian, mask.shape)
     return (img, laplacian, mask)
+
+def adjustData_L_rgb_3(img, mask):
+    if(np.max(img) > 1):
+        img = img / 255
+        mask = mask / 255
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
+#         gray = np.resize(gray, (256,256,1))
+        laplacian = filters.laplace(img, 3)
+        laplacian = normalize(laplacian)
+        laplacian = np.resize(laplacian, img.shape)
+    return (img, laplacian, mask)
+
 
 def adjustData_Canny_gray(img, mask):
     if(np.max(img) > 1):
@@ -129,7 +142,7 @@ def trainGenerator_L(batch_size,train_path,image_folder,mask_folder,aug_dict, im
         seed = seed)
     train_generator = zip(image_generator, mask_generator)
     for (img,mask) in train_generator:
-        img,laplacian,mask = adjustData_L_gray(img,mask)
+        img,laplacian,mask = adjustData_L_rgb_1(img,mask)
         yield [img, laplacian],[mask]
 
 def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_color_mode = 'grayscale',mask_color_mode = 'grayscale', 
@@ -159,5 +172,5 @@ def evalGenerator_L(batch_size, train_path, image_folder, mask_folder, image_col
         seed = seed)
     eval_generator = zip(image_generator, mask_generator)
     for (img,mask) in eval_generator:
-        img,laplacian,mask = adjustData_L_gray(img,mask)
+        img,laplacian,mask = adjustData_L_rgb_1(img,mask)
         yield [img, laplacian], [mask]
